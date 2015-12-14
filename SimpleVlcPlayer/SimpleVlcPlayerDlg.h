@@ -43,5 +43,6 @@ private:
 public:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	void SetFullScreen(BOOL full);
+	void HideControl(BOOL isHide);
 	CStatic m_playWnd;
 };

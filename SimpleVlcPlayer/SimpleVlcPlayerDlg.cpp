@@ -130,6 +130,11 @@ BOOL CSimpleVlcPlayerDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	CRect rc;
+	GetClientRect(&rc);
+	rc.DeflateRect(0, 0, 0, 80);
+	m_playWnd.MoveWindow(rc);
+
 	gPlayHwnd = GetDlgItem(IDC_PLAYWND)->GetSafeHwnd();
 	m_myPlayer.SetHWND(gPlayHwnd);   // 设置播放器的窗口句柄
 
@@ -243,13 +248,22 @@ void CSimpleVlcPlayerDlg::OnBnClickedButtonPlay()
 void CSimpleVlcPlayerDlg::OnBnClickedButtonStop()
 {
 	// TODO: Add your control notification handler code here
+	if (m_myPlayer.IsOpen())
+	{
+		m_myPlayer.Stop();
+		SetDlgItemText(IDC_BUTTON_PLAY, L"播放");
+	}
 }
 
 
 void CSimpleVlcPlayerDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	SetFullScreen(!m_bIsFullScreen);
+	if (m_myPlayer.IsOpen())
+	{
+		SetFullScreen(!m_bIsFullScreen);
+	}
+	
 	CDialogEx::OnLButtonDblClk(nFlags, point);
 }
 
@@ -259,20 +273,32 @@ void CSimpleVlcPlayerDlg::SetFullScreen(BOOL full)
 
 	if (full)
 	{
+		HideControl(TRUE);
+		//隐藏标题栏
+		SetWindowLong(GetSafeHwnd(), GWL_STYLE, GetWindowLong(m_hWnd, GWL_STYLE) - WS_CAPTION);
 		ShowWindow(SW_MAXIMIZE);
 		CRect rc;
 		GetClientRect(&rc);
-		m_playWnd.MoveWindow(rc, 1);
+		m_playWnd.MoveWindow(rc);
 	}
 	else
 	{
+		HideControl(FALSE);
+		SetWindowLong(this->GetSafeHwnd(), GWL_STYLE, GetWindowLong(m_hWnd, GWL_STYLE) + WS_CAPTION);
 		ShowWindow(SW_NORMAL);
 		CRect rc;
 		GetClientRect(&rc);
 		rc.DeflateRect(0, 0, 0, 80);
-		m_playWnd.MoveWindow(rc, 1);
-
+		m_playWnd.MoveWindow(rc);
 	}
+}
+
+void CSimpleVlcPlayerDlg::HideControl(BOOL isHide)
+{
+	((CButton *)GetDlgItem(IDC_BUTTON_OPEN))->ShowWindow(!isHide);
+	((CButton *)GetDlgItem(IDC_BUTTON_PLAY))->ShowWindow(!isHide);
+	((CButton *)GetDlgItem(IDC_BUTTON_STOP))->ShowWindow(!isHide);
+	((CEdit *)GetDlgItem(IDC_EDIT_PATH))->ShowWindow(!isHide);
 }
 
 CStringA UnicodeToUTF8(const CStringW& strWide)
